@@ -1,0 +1,228 @@
+﻿@page "/"
+@using ToDoList.Services
+@using ToDoList.Data.Models
+@inject ListelerService listelerService;
+
+
+<div class="container">
+    <div class="list-container">
+        <h3 class="ortalaYapacaklarim">Yapacaklarım</h3>
+        <form>
+            <input type="textarea" @bind="@yapacaklarim.Name" placeholder="Yapacağın bir şey..." />
+            <button type="button" class="buttonekle" @onclick="() => EkleYapacaklarim()">Ekle</button>
+        </form>
+        <ul class="list">
+            @foreach (var item in listelerService.YapacaklarimCagir())
+            {
+                <li>
+                    <p>@item.Name</p>
+                    <button class="delete-btn" @onclick="() => listelerService.YapacaklarimSil(item.Id)">Sil</button>
+                    <button class="edit-btn" @onclick="() => editItemId = item.Id">Edit</button>
+                    <button class="buttonyapiyorum" @onclick="() => YapacaklarimToYapiyorum(item.Name,item.Id)">Yapıyorum</button>
+                    <button class="buttonYaptim" @onclick="() => YapacaklarimToYaptim(item.Name, item.Id)">Yaptım</button>
+
+                    @if (editItemId == item.Id)
+                    {
+                        <input type="textarea" @bind="@editItemName" placeholder="Güncelle..." /><br/>
+                        <button class="kaydet-btn" @onclick="() => YapacaklarimUpdate(editItemId)">Kaydet</button>
+                        <button class="iptal-btn" @onclick="()=>EditIptal()">İptal</button>
+                    }
+                </li>
+            }
+            
+        </ul>
+        
+    </div>
+    
+    <div class="list-container">
+        <h3 class="ortalaYapiyorum">Yapıyorum</h3>
+        
+            <form>
+            <input type="textarea" @bind="@yapiyorum.Name" placeholder="Şuan yaptığın bir şey..." />
+            <button type="button" class="buttonekle" @onclick="() => EkleYapiyorum()">Ekle</button>
+            </form>
+
+        <ul class="list">
+            @foreach (var item in listelerService.YapiyorumCagir())
+            {
+                <li>
+                    <p>@item.Name</p>
+                    <button class="delete-btn" @onclick="() => listelerService.YapiyorumSil(item.Id)">Sil</button><br>
+                    <button class="edit-btn" @onclick="() => editItemId = item.Id">Edit</button>
+                    <button class="buttonYapacaklarim" @onclick="() => YapiyorumToYapacaklarim(item.Name,item.Id)">Yapacaklarım</button>
+                    <button class="buttonYaptim" @onclick="() => YapiyorumToYaptim(item.Name, item.Id)">Yaptım</button>
+
+                    @if (editItemId == item.Id)
+                    {
+                        <input type="textarea" @bind="@editItemName" placeholder="Güncelle..." /><br />
+                        <button class="kaydet-btn" @onclick="() => YapiyorumUpdate(editItemId)">Kaydet</button>
+                        <button class="iptal-btn" @onclick="()=>EditIptal()">İptal</button>
+                    }
+                </li>
+            }
+            
+        </ul>
+        
+    </div>
+    <div class="list-container">
+        <h3 class="ortalaYaptim">Yaptım</h3>
+        <form>
+            <input type="textarea" @bind="@yaptim.Name" placeholder="Yaptığın bir şey..." />
+            <button type="button" class="buttonekle" @onclick="() => EkleYaptim()">Ekle</button>
+        </form>
+
+        <ul class="list">
+            @foreach (var item in listelerService.YaptimCagir())
+            {
+                <li>
+                    <p>@item.Name</p>
+                    <button class="delete-btn" @onclick="() => listelerService.YaptimSil(item.Id)">Sil</button><br>
+                    <button class="edit-btn" @onclick="() => editItemId = item.Id">Edit</button>
+                    <button class="buttonYapacaklarim" @onclick="() => YaptimToYapacaklarim(item.Name, item.Id)">Yapacaklarım</button>
+                    <button class="buttonyapiyorum" @onclick="() => YaptimToYapiyorum(item.Name, item.Id)">Yapıyorum</button>
+
+                    @if (editItemId == item.Id)
+                    {
+                        <input type="textarea" @bind="@editItemName" placeholder="Güncelle..." /><br/>
+                        <button class="kaydet-btn" @onclick="() => YaptimUpdate(editItemId)">Kaydet</button>
+                        <button class="iptal-btn" @onclick="()=>EditIptal()">İptal</button>
+                    }
+                </li>
+            }
+            
+        </ul>
+        
+    </div>
+</div>
+@code {
+
+    private Yapacaklarim yapacaklarim = new();
+    private Yapiyorum yapiyorum = new();
+    private Yaptim yaptim = new();
+
+    private int editItemId = 0;
+    private string editItemName=string.Empty;
+    //yapacakalrim listesine oge ekliyor
+    private void EkleYapacaklarim()
+    {
+        if (!string.IsNullOrWhiteSpace(yapacaklarim.Name))
+        {
+            listelerService.EkleYapacaklarim(yapacaklarim);
+            this.yapacaklarim = new Yapacaklarim();
+        }
+    }
+    //yapiyorum listesine oge ekliyor
+    private void EkleYapiyorum()
+    {
+        if (!string.IsNullOrWhiteSpace(yapiyorum.Name))
+        {
+            listelerService.EkleYapiyorum(yapiyorum);
+            this.yapiyorum = new Yapiyorum();
+        }
+    }
+    //yaptim listesine oge ekliyor
+    private void EkleYaptim()
+    {
+        if (!string.IsNullOrWhiteSpace(yaptim.Name))
+        {
+            listelerService.EkleYaptim(yaptim);
+            this.yaptim = new Yaptim();
+        }
+    }
+    //yapiyorumdan yaptim listesine oge ekliyor
+    private void YapiyorumToYaptim(string name, int Id)
+    {
+        yaptim.Name = name;
+        listelerService.EkleYaptim(yaptim);
+        listelerService.YapiyorumSil(Id);
+        this.yaptim = new Yaptim();
+    }
+    //yaptimdan yapiyorum listesine oge ekliyor
+    private void YaptimToYapiyorum(string name, int Id)
+    {
+        yapiyorum.Name = name;
+        listelerService.EkleYapiyorum(yapiyorum);
+        listelerService.YaptimSil(Id);
+        this.yapiyorum = new Yapiyorum();
+    }
+    //yaptimdan yapacaklarim listesine oge ekliyor
+    private void YaptimToYapacaklarim(string name, int Id)
+    {
+        yapacaklarim.Name = name;
+        listelerService.EkleYapacaklarim(yapacaklarim);
+        listelerService.YaptimSil(Id);
+        this.yapacaklarim = new Yapacaklarim();
+    }
+    //yapacaklarimdan yaptim listesine oge ekliyor
+    private void YapacaklarimToYaptim(string name, int Id)
+    {
+        yaptim.Name = name;
+        listelerService.EkleYaptim(yaptim);
+        listelerService.YapacaklarimSil(Id);
+        this.yaptim = new Yaptim();
+    }
+    //yapiyorumdan yapacaklarim listesine oge ekliyor
+    private void YapiyorumToYapacaklarim(string name, int Id)
+    {
+        yapacaklarim.Name = name;
+        listelerService.EkleYapacaklarim(yapacaklarim);
+        listelerService.YapiyorumSil(Id);
+        this.yapacaklarim = new Yapacaklarim();
+    }
+    //yapacaklarimdan yapiyorum listesine oge ekliyor
+    private void YapacaklarimToYapiyorum(string name, int Id)
+    {
+        yapiyorum.Name = name;
+        listelerService.EkleYapiyorum(yapiyorum);
+        listelerService.YapacaklarimSil(Id);
+        this.yapiyorum = new Yapiyorum();
+    }
+    //Kaydet butonuna basinca text alanini guncelliyor
+    private void YapacaklarimUpdate(int Id)
+    { 
+        var yapacaklarim = new Yapacaklarim { Name = editItemName };
+        
+        if (!string.IsNullOrWhiteSpace(yapacaklarim.Name))
+        {
+            listelerService.YapacaklarimEdit(yapacaklarim.Name, Id);
+            editItemId = 0;
+            editItemName = string.Empty;
+        }
+        
+    }
+
+    //Kaydet butonuna basinca text alanini guncelliyor
+    private void YapiyorumUpdate(int Id)
+    {
+        var yapiyorum = new Yapiyorum { Name = editItemName };
+
+        if (!string.IsNullOrWhiteSpace(yapiyorum.Name))
+        {
+            listelerService.YapiyorumEdit(yapiyorum.Name, Id);
+            editItemId = 0;
+            editItemName = string.Empty;
+        }
+
+    }
+
+    //Kaydet butonuna basinca text alanini guncelliyor
+    private void YaptimUpdate(int Id)
+    {
+        var yaptim = new Yaptim { Name = editItemName };
+
+        if (!string.IsNullOrWhiteSpace(yaptim.Name))
+        {
+            listelerService.YaptimEdit(yaptim.Name, Id);
+            editItemId = 0;
+            editItemName = string.Empty;
+        }
+
+    }
+
+    void EditIptal()
+    {
+        editItemId = 0;
+        editItemName = string.Empty;
+    }
+
+}
